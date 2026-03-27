@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS metrics (
+  id SERIAL PRIMARY KEY,
+  source_id INTEGER NOT NULL,
+  metric_type VARCHAR(255) NOT NULL,
+  value FLOAT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);

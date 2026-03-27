@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS alerts (
+  id SERIAL PRIMARY KEY,
+  source_id INTEGER NOT NULL,
+  condition VARCHAR(255) NOT NULL,
+  threshold FLOAT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
