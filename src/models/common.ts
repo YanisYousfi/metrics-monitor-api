@@ -10,3 +10,8 @@ export const metricTypeEnum = z.enum([
   "error_rate",
   "memory_usage",
 ]);
+
+export interface ErrorResponse {
+  error?: string;
+  errors?: z.core.$ZodIssue[];
+}
