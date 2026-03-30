@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const DateRangeSchema = z.object({
-  date_from: z.string().optional(),
-  date_to: z.string().optional(),
+  date_from: z.iso.datetime().optional(),
+  date_to: z.iso.datetime().optional(),
 });
 
 export const metricTypeEnum = z.enum([
