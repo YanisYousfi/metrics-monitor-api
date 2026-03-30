@@ -1,11 +1,13 @@
 import express, { Request, Response } from "express";
 import pool from "./db";
 import metricsRouter from "./routes/metrics";
+import logger from "./middleware/logger";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+app.use(logger);
 
 app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ status: "OK", timestamp: new Date().toISOString() });
