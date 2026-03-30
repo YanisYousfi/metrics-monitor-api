@@ -5,6 +5,7 @@ import { ErrorResponse, metricTypeEnum } from "../models/common.js";
 import { sourceIdParamSchema } from "../models/source.js";
 import { Anomaly, Metric, MetricStats } from "../models/metrics.js";
 import { QueryResult } from "pg";
+import asyncHandler from "../utils/asyncHandler.js";
 
 const router = Router();
 
@@ -44,12 +45,12 @@ interface AnomalyResponse {
   data: Anomaly[];
 }
 
-router.post("/", async (req: Request, res: Response) => {
-  try {
+router.post(
+  "/",
+  asyncHandler(async (req: Request, res: Response) => {
     const { source_id, metric_type, value, timestamp } =
       metricPayloadSchema.parse(req.body);
 
-    // Check if source exists
     const sourceCheck = await pool.query(
       "SELECT id FROM sources WHERE id = $1",
       [source_id],
@@ -60,7 +61,6 @@ router.post("/", async (req: Request, res: Response) => {
       return;
     }
 
-    // Insert the metric
     const result = await pool.query(
       `INSERT INTO metrics (source_id, metric_type, value, created_at)
        VALUES ($1, $2, $3, $4)
@@ -69,20 +69,16 @@ router.post("/", async (req: Request, res: Response) => {
     );
 
     res.status(201).json(result.rows[0]);
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      res.status(400).json({ errors: err.issues });
-      return;
-    }
-    console.error("Error inserting metric:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-});
+  }),
+);
 
 router.get(
   "/stats",
-  async (req: Request, res: Response<MetricStatsResponse | ErrorResponse>) => {
-    try {
+  asyncHandler(
+    async (
+      req: Request,
+      res: Response<MetricStatsResponse | ErrorResponse>,
+    ) => {
       const { source_id, metric_type, date_from, date_to } =
         getStatsParamsSchema.parse(req.query);
 
@@ -124,21 +120,14 @@ router.get(
       const result: QueryResult<MetricStats> = await pool.query(query, params);
 
       res.status(200).json({ data: result.rows });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        res.status(400).json({ errors: err.issues });
-        return;
-      }
-      console.error("Error fetching metrics:", err);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  },
+    },
+  ),
 );
 
 router.get(
   "/anomalies",
-  async (req: Request, res: Response<AnomalyResponse | ErrorResponse>) => {
-    try {
+  asyncHandler(
+    async (req: Request, res: Response<AnomalyResponse | ErrorResponse>) => {
       const { source_id, metric_type, date_from, date_to } =
         getStatsParamsSchema.parse(req.query);
 
@@ -194,21 +183,14 @@ router.get(
       const result: QueryResult<Anomaly> = await pool.query(query, params);
 
       res.status(200).json({ data: result.rows });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        res.status(400).json({ errors: err.issues });
-        return;
-      }
-      console.error("Error fetching metrics:", err);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  },
+    },
+  ),
 );
 
 router.get(
   "/:source_id",
-  async (req: Request, res: Response<MetricResponse | ErrorResponse>) => {
-    try {
+  asyncHandler(
+    async (req: Request, res: Response<MetricResponse | ErrorResponse>) => {
       const { source_id } = sourceIdParamSchema.parse(req.params);
       const { metric_type, date_from, date_to } = getMetricsQuerySchema.parse(
         req.query,
@@ -239,15 +221,8 @@ router.get(
       const result: QueryResult<Metric> = await pool.query(query, params);
 
       res.status(200).json({ data: result.rows });
-    } catch (err) {
-      if (err instanceof z.ZodError) {
-        res.status(400).json({ errors: err.issues });
-        return;
-      }
-      console.error("Error fetching metrics:", err);
-      res.status(500).json({ error: "Internal server error" });
-    }
-  },
+    },
+  ),
 );
 
 export default router;
