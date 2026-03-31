@@ -1,20 +1,19 @@
 import { Router, Request, Response } from "express";
 import pool from "../db.js";
 import { z } from "zod";
-import { ErrorResponse, metricTypeEnum } from "../models/common.js";
+import { ErrorResponse } from "../models/common.js";
 import { sourceIdParamSchema } from "../models/source.js";
-import { Anomaly, Metric, MetricStats } from "../models/metrics.js";
+import {
+  Anomaly,
+  Metric,
+  metricPayloadSchema,
+  metricTypeEnum,
+  MetricStats,
+} from "../models/metrics.js";
 import { QueryResult } from "pg";
 import asyncHandler from "../utils/asyncHandler.js";
 
 const router = Router();
-
-const metricPayloadSchema = z.object({
-  source_id: z.number(),
-  metric_type: metricTypeEnum,
-  value: z.number().nonnegative(),
-  timestamp: z.string().optional(),
-});
 
 const getStatsParamsSchema = z.object({
   source_id: z
